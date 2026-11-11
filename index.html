@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DO NOT LOOK — Interactive Gaze Exhibition</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,"Noto Sans SC",system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;background:#06080a;color:#e9ebef;overflow:hidden}canvas{display:block}body.exploring>canvas{cursor:none}body.exploring #cross{display:block}#hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:22px;left:24px;display:flex;align-items:center;gap:13px}#mark{height:28px;width:28px;border:1px solid #d94b49;border-radius:50%;display:grid;place-items:center;color:#e56a65;font-size:14px}#top b{font-size:13px;letter-spacing:.19em;font-weight:650}#top small{display:block;margin-top:4px;color:#a4a7ab;font-size:10px;letter-spacing:.14em}.right{position:absolute;top:27px;right:28px;display:flex;align-items:center;gap:10px;color:#c2c5c9;font-size:11px;letter-spacing:.09em}.dot{height:7px;width:7px;border-radius:50%;background:#d94d4c;box-shadow:0 0 9px #d94d4c}#cross{display:none;position:absolute;left:50%;top:50%;width:15px;height:15px;transform:translate(-50%,-50%);opacity:.55}#cross:before,#cross:after{content:"";position:absolute;background:#e1e3e7}#cross:before{top:7px;width:15px;height:1px}#cross:after{left:7px;width:1px;height:15px}#notice{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);padding:12px 20px;border:1px solid #ffffff25;background:#07090dcf;backdrop-filter:blur(6px);font-size:12px;color:#eee;white-space:nowrap;opacity:0;transition:opacity .25s}#notice.show{opacity:1}#bottom{position:absolute;bottom:22px;left:24px;color:#91969d;font-size:11px;letter-spacing:.04em;line-height:2}kbd{border:1px solid #575b62;border-radius:3px;padding:2px 5px;color:#f1f1f2;margin-right:4px;font:inherit}#coordinate{position:absolute;bottom:24px;right:27px;text-align:right;font:10px/1.9 monospace;color:#a1a5ab}#gate{position:fixed;inset:0;background:linear-gradient(120deg,#080a0de9,#101217e6);display:grid;place-items:center;z-index:12;padding:20px}#gate.hidden{display:none}.intro{max-width:620px;width:100%;border:1px solid #ffffff20;background:#101216ec;padding:clamp(26px,5vw,55px)}.eyebrow{color:#d66a6b;letter-spacing:.32em;font-size:10px}.intro h1{font-weight:450;letter-spacing:.09em;font-size:clamp(30px,5vw,55px);margin:14px 0 12px}.intro p{line-height:1.85;color:#afb2b6;font-size:13px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}button{background:#dbdfe5;border:1px solid #dbdfe5;color:#151719;padding:12px 19px;font-weight:650;cursor:pointer;font-size:12px;letter-spacing:.07em}button.secondary{background:transparent;color:#d6d7db;border-color:#686a70}button:hover{filter:brightness(.85)}.detail{border-top:1px solid #ffffff20;padding-top:18px;margin-top:25px;color:#8f959d;font-size:11px;line-height:2}#peekLabel{position:absolute;left:50%;top:17%;transform:translateX(-50%);text-align:center;display:none}#peekLabel strong{font-weight:500;letter-spacing:.24em;font-size:16px}#peekLabel p{color:#acb2b9;font-size:11px}#nine{display:none;position:fixed;inset:0;background:#030404;z-index:5;padding:4.2vh 5vw 5vh;flex-direction:column}#nine.active{display:flex}#nine header{display:flex;justify-content:space-between;gap:10px;color:#c6c8c9;letter-spacing:.15em;font-size:11px;padding-bottom:14px}#grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:5px}.feed{position:relative;background:#15191d;overflow:hidden}.feed canvas{width:100%;height:100%;object-fit:cover;transform:scale(1.04);filter:contrast(1.2) saturate(.4)}.feed:nth-child(2n) canvas{transform:scale(1.28) translateX(6%);filter:contrast(1.5) grayscale(.9)}.feed:nth-child(3n) canvas{transform:scale(1.4) translateY(7%);filter:grayscale(1) brightness(.84)}.feed:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0,transparent 3px,#0003 4px);pointer-events:none}.feed span{position:absolute;left:9px;top:7px;font:9px monospace;letter-spacing:.07em;color:#ecdbdb;text-shadow:0 1px 4px #000}.feed .live{position:absolute;right:10px;top:8px;color:#ee5e5a;font:10px monospace}#nine footer{padding-top:11px;color:#929598;font:11px monospace;text-align:center}#glitch{position:fixed;inset:0;display:none;z-index:11;pointer-events:none;background:repeating-linear-gradient(0deg,#f3f3f3 0 2px,#f0f 4px 6px,#101010 8px 13px);mix-blend-mode:screen;animation:glitch .11s steps(2) infinite}@keyframes glitch{0%{clip-path:inset(2% 0 20% 0);transform:translateX(-9px);opacity:.8}50%{clip-path:inset(35% 0 3% 0);transform:translateX(12px);opacity:.55}100%{clip-path:inset(0 0 60% 0);transform:translateX(-4px);opacity:.7}}#status{font-size:11px;color:#e2aaa9;margin-top:10px;min-height:18px}@media(max-width:600px){#bottom{font-size:9px}#top{left:12px;top:12px}.right{right:13px;top:16px;font-size:9px}#coordinate{display:none}#nine{padding:36px 9px 22px}#grid{gap:3px}}
+</style>
+</head>
+<body>
+<div id="hud"><div id="top"><div id="mark">◉</div><div><b>DO NOT LOOK</b><small>EXHIBITION 001 / INTERACTIVE GALLERY</small></div></div><div class="right"><span class="dot"></span><span id="tracking">CAMERA TRACKING / ACTIVE</span></div><div id="cross" aria-hidden="true"></div><div id="peekLabel"><strong id="screenState">YOU ARE BEING WATCHED</strong><p id="screenSub">A perspective you were never supposed to see.</p></div><div id="notice"></div><div id="bottom"><div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move &nbsp; <kbd>MOUSE</kbd> Look around &nbsp; <kbd>SPACE</kbd> Hold to raise your view &nbsp; <kbd>R</kbd> Look Closer</div><div><kbd>ESC</kbd> Release cursor &nbsp; <kbd>CLICK</kbd> Capture cursor &nbsp; <kbd>R</kbd> Return to gallery</div></div><div id="coordinate">EXHIBITION / NIGHT MODE<br><span id="pos">X 0.0 · Z 5.0</span></div></div>
+<div id="gate"><div class="intro"><div class="eyebrow">INTERACTIVE INSTALLATION / A STUDY IN DIGITAL SURVEILLANCE</div><h1>DO NOT LOOK</h1><p>A quiet gallery after dark. A peephole in a pillar. A security camera that turns to follow you. Step closer and raise your view to see yourself from behind in a live feed from inside the gallery. Press R to Look Closer.</p><div class="actions"><button id="start">ENTER EXHIBITION</button><button class="secondary" id="webcam">ENABLE WEBCAM</button></div><div id="status"></div><div class="detail">Move with WASD and look around with the mouse. Hold Space to raise your view and release it to lower your view. Move close to the peephole and center it in the crosshair. Press R to Look Closer.<br>Sculpture scans from <a href="./credits.html" target="_blank" rel="noopener">the British Museum</a>.<br>The webcam activates only after you grant permission. Its video stays in your browser and is never uploaded or saved. The peephole shows a live 3D view from the overhead camera inside the gallery.</div></div></div>
+<div id="nine"><header><span>ARCHIVE / NINE EYES</span><span id="webcamState">LOCAL LIVE CAMERA / PERMISSION REQUIRED</span></header><div id="grid"></div><footer>ONE LIVE CAMERA · NINE CROPPED PERSPECTIVES &nbsp; / &nbsp; PRESS R TO RETURN</footer></div><div id="glitch"></div>
+<script type="module">
+import * as THREE from './three.mjs';
+import {GLTFLoader} from './GLTFLoader.js';
+const $=id=>document.getElementById(id);const scene=new THREE.Scene();scene.background=new THREE.Color('#333235');scene.fog=new THREE.FogExp2('#363437',0.035);
+let renderer;
+try {
+  renderer=new THREE.WebGLRenderer({antialias:false});
+} catch (error) {
+  $('status').textContent='WebGL could not start. Open this exhibition in a desktop browser with WebGL support.';
+  $('start').disabled=true;
+  $('webcam').disabled=true;
+  throw error;
+}
+let pixelBudget=1250000;
+function resizeRenderer(){
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1.5,Math.sqrt(pixelBudget/(innerWidth*innerHeight))));
+  renderer.setSize(innerWidth,innerHeight);
+}
+resizeRenderer();
+renderer.shadowMap.enabled=true;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;document.body.prepend(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(73,innerWidth/innerHeight,.06,75);camera.position.set(0,1.63,5.5);camera.rotation.order='YXZ';camera.layers.enable(0);
+const mat=(c,rough=0.9)=>new THREE.MeshStandardMaterial({color:c,roughness:rough});const wallMat=mat('#44464b'),pillarMat=mat('#93989e'),dark=mat('#090a0c'),metal=mat('#5a646b',.45);function box(w,h,d,x,y,z,m,shadow=false){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.receiveShadow=true;o.castShadow=shadow;scene.add(o);return o}function lamp(x,y,z,color,power,dist){const l=new THREE.PointLight(color,power,dist,2);l.position.set(x,y,z);scene.add(l);return l}
+// Open floor and charcoal room envelope.
+box(24,.25,24,0,-.125,0,mat('#57535a'));
+box(24,7,.22,0,3.5,-11.5,mat('#373537'));
+box(.22,7,24,-11.5,3.5,0,wallMat);
+box(.22,7,24,11.5,3.5,0,wallMat);
+box(24,7,.22,0,3.5,11.5,wallMat);
+box(24,.28,24,0,6.8,0,mat('#29282c'));
+scene.add(new THREE.HemisphereLight('#b1adbf','#413240',1.05));
+function spotlight(color,power,position,target,angle,shadow=false){
+  const light=new THREE.SpotLight(color,power,25,angle,.64,1.35);
+  light.position.set(...position);
+  light.target.position.set(...target);
+  light.castShadow=shadow;
+  light.shadow.mapSize.set(1024,1024);
+  light.shadow.bias=-.00025;
+  scene.add(light,light.target);
+}
+spotlight('#686cff',135,[3.4,5.4,7],[0,1.35,0],.66,true);
+spotlight('#f44354',115,[-4.7,4.7,-3.2],[0,.25,.6],.75,true);
+spotlight('#a195ee',27,[1.0,4.6,3.8],[0,2.05,.64],.26);
+
+// Cut the circular opening into the front of the original rectangular volume.
+const holeY=2.05, frontZ=.64, holeRadius=.087;
+const pillarHeight=6.65, pillarWidth=1.38, recess=.045;
+const profile=new THREE.Shape();
+profile.moveTo(-pillarWidth/2,0);
+profile.lineTo(pillarWidth/2,0);
+profile.lineTo(pillarWidth/2,pillarHeight);
+profile.lineTo(-pillarWidth/2,pillarHeight);
+profile.closePath();
+const aperture=new THREE.Path();
+aperture.absarc(0,holeY,holeRadius,0,Math.PI*2,true);
+profile.holes.push(aperture);
+const facade=new THREE.Mesh(new THREE.ExtrudeGeometry(profile,{depth:recess,bevelEnabled:false,curveSegments:32}),pillarMat);
+facade.position.z=frontZ-recess;
+facade.castShadow=true;
+facade.receiveShadow=true;
+scene.add(facade);
+box(pillarWidth,pillarHeight,1.28-recess-.006,0,pillarHeight/2,-recess/2-.003,pillarMat,true);
+
+const pedestals=[];
+const watchingSculptures=[];
+const loader = new GLTFLoader();
+const scans = {
+  caesar: loader.loadAsync('./caesar.glb'),
+  marcus: loader.loadAsync('./marcus.glb')
+};
+const plaster = mat('#ffffff', 1);
+// Add soft neutral fill to the plaster while retaining directional shading.
+plaster.onBeforeCompile = shader=>{
+  shader.fragmentShader=shader.fragmentShader.replace(
+    '#include <opaque_fragment>',
+    'outgoingLight = vec3(0.32 + dot(outgoingLight, vec3(0.2126, 0.7152, 0.0722)));\n#include <opaque_fragment>'
+  );
+};
+async function sculpture(x,z,scale,angle,portrait){
+  const baseHeight=.73*scale;
+  const baseWidth=.82*scale;
+  box(baseWidth,baseHeight,baseWidth,x,baseHeight/2,z,mat('#696675'),true);
+  pedestals.push({x,z,half:baseWidth/2+.19});
+  const bust=new THREE.Group();
+  bust.position.set(x,baseHeight,z);
+  bust.rotation.y=angle;
+  scene.add(bust);
+  const model=(await scans[portrait]).scene.clone(true);
+  const bounds=new THREE.Box3().setFromObject(model,true);
+  const center=bounds.getCenter(new THREE.Vector3());
+  const factor=1.49*scale/(bounds.max.y-bounds.min.y);
+  model.scale.setScalar(factor);
+  model.position.set(-center.x*factor,-bounds.min.y*factor-.025*scale,-center.z*factor);
+  model.traverse(mesh=>{
+    if(!mesh.isMesh)return;
+    mesh.material=plaster;
+    mesh.castShadow=true;
+    mesh.receiveShadow=true;
+  });
+  bust.add(model);
+  watchingSculptures.push(bust);
+}
+const sculptures=[
+  [-1.85,1.62,1.27,.18,'marcus'],
+  [-3.28,.35,1.05,2.55,'caesar'],
+  [-3.94,-1.78,.86,1.02,'marcus'],
+  [-1.62,-1.75,.91,-1.06,'caesar'],
+  [1.12,-2.18,.83,.7,'caesar'],
+  [2.23,-.83,.82,-.88,'marcus'],
+  [3.32,.35,1.07,-.48,'marcus']
+];
+Promise.allSettled(sculptures.map(spec=>sculpture(...spec))).then(results=>{
+  renderer.shadowMap.needsUpdate=true;
+  const failure=results.find(result=>result.status==='rejected');
+  if(!failure)return;
+  console.error(failure.reason);
+  $('status').textContent='Some sculptures could not load. Refresh the page to try again.';
+});
+// Ceiling surveillance camera with rotating, visible head.
+const surveillance=new THREE.Group();surveillance.position.set(.42,6.35,7.8);scene.add(surveillance);const arm=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.57,12),metal);arm.position.y=-.22;surveillance.add(arm);const head=new THREE.Group();head.position.y=-.55;surveillance.add(head);const camBody=new THREE.Mesh(new THREE.BoxGeometry(.65,.31,.34),mat('#d4d5d7',.45));camBody.position.z=-.10;head.add(camBody);const camLens=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.065,20),dark);camLens.rotation.x=Math.PI/2;camLens.position.set(0,0,-.313);head.add(camLens);const lensGlass=new THREE.Mesh(new THREE.CircleGeometry(.072,24),new THREE.MeshBasicMaterial({color:'#c64e55'}));lensGlass.position.set(0,0,-.354);head.add(lensGlass);
+head.traverse(object=>object.layers.set(2));
+camera.layers.enable(2);
+// In-world avatar only visible to the separate rear-surveillance camera.
+const avatar=new THREE.Group();
+const upperBody=new THREE.Group();
+upperBody.position.y=.91;
+avatar.add(upperBody);
+scene.add(avatar);
+function avatarPiece(parent,geometry,material,x,y,z){
+  const mesh=new THREE.Mesh(geometry,material);
+  mesh.position.set(x,y,z);
+  mesh.layers.set(1);
+  parent.add(mesh);
+}
+const coat=mat('#606a78'),skin=mat('#b9aaa0'),hair=mat('#2a2227'),trousers=mat('#24232c');
+avatarPiece(upperBody,new THREE.SphereGeometry(.16,20,14),skin,0,.80,0);
+avatarPiece(upperBody,new THREE.SphereGeometry(.151,20,14),hair,0,.85,.045);
+avatarPiece(upperBody,new THREE.CapsuleGeometry(.245,.43,6,16),coat,0,.29,0);
+for(const side of [-1,1]){
+  avatarPiece(upperBody,new THREE.CapsuleGeometry(.074,.54,5,12),coat,side*.29,.21,0);
+  avatarPiece(avatar,new THREE.CapsuleGeometry(.095,.69,5,12),trousers,side*.135,.47,0);
+}
+const surveillanceCamera=new THREE.PerspectiveCamera(37,1,.1,60);
+surveillanceCamera.position.copy(surveillance.position).add(head.position);
+surveillanceCamera.layers.enable(1);
+const renderTarget=new THREE.WebGLRenderTarget(384,384,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat});
+const peekMat=new THREE.MeshBasicMaterial({map:renderTarget.texture,side:THREE.DoubleSide,toneMapped:false,fog:false});const peekScreen=new THREE.Mesh(new THREE.CircleGeometry(holeRadius+.005,64),peekMat);peekScreen.position.set(0,holeY,frontZ-recess+.002);scene.add(peekScreen);peekScreen.visible=false;
+const apertureBacking=new THREE.Mesh(new THREE.CircleGeometry(holeRadius+.005,64),new THREE.MeshBasicMaterial({color:'#110f17'}));
+apertureBacking.position.copy(peekScreen.position);
+apertureBacking.position.z-=.004;
+scene.add(apertureBacking);
+
+// Player, input and collisions.
+let yaw=0,pitch=0,raised=false,started=false,peek=false,gridMode=false;const keys={};const clock=new THREE.Clock();let playerX=.52,playerZ=7.05;const height=()=>raised?2.05:1.63;function clamp(v,min,max){return Math.max(min,Math.min(max,v))}function positionValid(x,z){if(Math.abs(x)>10.7||Math.abs(z)>10.65)return false;if(Math.abs(x)<.88&&Math.abs(z)<.84)return false;return !pedestals.some(p=>Math.abs(x-p.x)<p.half&&Math.abs(z-p.z)<p.half)}function updateView(){camera.position.set(playerX,height(),playerZ);camera.rotation.set(pitch,yaw,0,'YXZ')}function displayNotice(txt){$('notice').textContent=txt;$('notice').classList.add('show')}
+const webcamVideo=document.createElement('video');
+webcamVideo.muted=true;
+webcamVideo.playsInline=true;
+const webcamTiles=[];
+let webcamRequest=null;
+let lastWebcamFrame=0;
+
+function enableWebcam(){
+  if(webcamVideo.srcObject?.active)return Promise.resolve(true);
+  if(webcamRequest)return webcamRequest;
+  if(!navigator.mediaDevices?.getUserMedia){
+    $('status').textContent='The webcam is unavailable. Open this page over HTTPS or on localhost.';
+    $('webcamState').textContent='CAMERA UNAVAILABLE / HTTPS REQUIRED';
+    return Promise.resolve(false);
+  }
+  $('webcamState').textContent='WAITING FOR CAMERA PERMISSION';
+  webcamRequest=navigator.mediaDevices.getUserMedia({
+    video:{facingMode:'user',width:{ideal:640},height:{ideal:480},frameRate:{ideal:24,max:30}},
+    audio:false
+  }).then(stream=>{
+    webcamVideo.srcObject=stream;
+    if(gridMode)webcamVideo.play().catch(()=>{});
+    $('status').textContent='Webcam enabled. The feed stays in your browser.';
+    $('webcamState').textContent='LIVE / LOCAL WEBCAM';
+    return true;
+  }).catch(()=>{
+    $('webcamState').textContent='CAMERA UNAVAILABLE / CHECK PERMISSION';
+    $('status').textContent='Webcam access was not granted. You can still explore the gallery.';
+    return false;
+  }).finally(()=>{webcamRequest=null;});
+  return webcamRequest;
+}
+
+function drawWebcamGrid(now){
+  if(!webcamVideo.srcObject?.active||webcamVideo.readyState<2||now-lastWebcamFrame<1000/24)return;
+  lastWebcamFrame=now;
+  const width=webcamVideo.videoWidth,height=webcamVideo.videoHeight;
+  const cropWidth=Math.min(width,height*4/3),cropHeight=Math.min(height,width*3/4);
+  for(const tile of webcamTiles){
+    tile.drawImage(webcamVideo,(width-cropWidth)/2,(height-cropHeight)/2,cropWidth,cropHeight,0,0,320,240);
+  }
+}
+
+const canvas=renderer.domElement;
+let contextLost=false;
+canvas.addEventListener('webglcontextlost',event=>{
+  event.preventDefault();
+  contextLost=true;
+  if(!gridMode)displayNotice('The 3D view paused while graphics are recovering.');
+  $('status').textContent='Graphics paused. Waiting for the browser to restore WebGL.';
+  $('start').disabled=true;
+});
+canvas.addEventListener('webglcontextrestored',()=>{
+  lastOverheadFrame=-Infinity;
+  pixelBudget=650000;
+  resizeRenderer();
+  contextLost=false;
+  renderer.shadowMap.needsUpdate=true;
+  $('start').disabled=false;
+  $('status').textContent='';
+  $('notice').classList.remove('show');
+});
+let mousePosition=null;
+function captureMouse(){
+  if(document.pointerLockElement===canvas)return;
+  try { canvas.requestPointerLock?.()?.catch(()=>{}); } catch {}
+}
+$('webcam').addEventListener('click',enableWebcam);
+$('start').addEventListener('click',()=>{
+  $('gate').classList.add('hidden');
+  started=true;
+  document.body.classList.add('exploring');
+  captureMouse();
+});
+canvas.addEventListener('click',()=>{if(started&&!gridMode)captureMouse();});
+document.addEventListener('pointerlockchange',()=>{mousePosition=null;});
+window.addEventListener('blur',()=>{mousePosition=null;});
+document.addEventListener('mousemove',event=>{
+  if(!started||gridMode)return;
+  if(document.pointerLockElement===canvas){
+    yaw-=event.movementX*.0021;
+    pitch=clamp(pitch-event.movementY*.0021,-1.48,1.48);
+    return;
+  }
+  const previous=mousePosition;
+  mousePosition={x:event.clientX,y:event.clientY};
+  if(!previous||event.target!==canvas)return;
+  yaw-=(mousePosition.x-previous.x)*.0028;
+  pitch=clamp(pitch-(mousePosition.y-previous.y)*.0028,-1.48,1.48);
+});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','KeyR','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Space'&&!gridMode){raised=true}if(e.code==='KeyR'&&started){if(gridMode){switchGrid(false);return}if(peek&&!contextLost){switchGrid(true)}else displayNotice('Move closer and center the peephole in the crosshair before pressing R.')} });document.addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space')raised=false;});
+window.addEventListener('blur',()=>{Object.keys(keys).forEach(key=>delete keys[key]);raised=false;});
+let gridTransition,glitchTransition;
+function switchGrid(show){
+  clearTimeout(gridTransition);
+  clearTimeout(glitchTransition);
+  gridMode=show;
+  document.body.classList.toggle('exploring',!show);
+  mousePosition=null;
+  $('notice').classList.remove('show');
+  if(show){
+    if(document.pointerLockElement===canvas)document.exitPointerLock?.();
+    if(webcamVideo.srcObject?.active)webcamVideo.play().catch(()=>{});
+    else enableWebcam();
+  }else{
+    webcamVideo.pause();
+    captureMouse();
+    if(contextLost)displayNotice('The 3D view paused while graphics are recovering.');
+  }
+  $('glitch').style.display='block';
+  gridTransition=setTimeout(()=>{
+    $('nine').classList.toggle('active',show);
+    $('peekLabel').style.display='none';
+  },260);
+  glitchTransition=setTimeout(()=>$('glitch').style.display='none',680);
+}
+
+for(let i=0;i<9;i++){
+  const el=document.createElement('div');
+  el.className='feed';
+  const tile=document.createElement('canvas');
+  tile.width=320;
+  tile.height=240;
+  const context=tile.getContext('2d',{alpha:false});
+  if(context)webcamTiles.push(context);
+  const label=document.createElement('span');
+  label.textContent=`CAM ${String(i+1).padStart(2,'0')} / LIVE`;
+  const live=document.createElement('div');
+  live.className='live';
+  live.textContent='● REC';
+  el.append(tile,label,live);
+  $('grid').append(el);
+}
+// Turn the complete rigid plaster bust around its centered base on the pedestal.
+// Align the gaze with the visitor every frame for immediate tracking.
+function updateSculptureGaze(){
+  let moved=false;
+  for(const bust of watchingSculptures){
+    const dx=playerX-bust.position.x;
+    const dz=playerZ-bust.position.z;
+    if(dx*dx+dz*dz<.01)continue;
+    const targetYaw=Math.atan2(dx,dz);
+    const difference=Math.atan2(Math.sin(targetYaw-bust.rotation.y),Math.cos(targetYaw-bust.rotation.y));
+    bust.rotation.y+=difference;
+    moved=moved||Math.abs(difference)>.00001;
+  }
+  return moved;
+}
+let lastSculptureShadowFrame=-Infinity;
+// Run rear-camera pass before player-view pass. Camera points at 3D player's back.
+let lastOverheadFrame=-Infinity;
+function animate(now){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),.04);
+  if(document.hidden)return;
+  if(gridMode){
+    drawWebcamGrid(now);
+    return;
+  }
+  if(contextLost)return;
+  if(!started&&!renderer.shadowMap.needsUpdate)return;
+  if(started){let forward=0,side=0;if(keys.KeyW||keys.ArrowUp)forward++;if(keys.KeyS||keys.ArrowDown)forward--;if(keys.KeyD)side++;if(keys.KeyA)side--;const speed=(keys.ShiftLeft?4.8:3.0)*dt;const vx=(-Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed,vz=(-Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed;if(positionValid(playerX+vx,playerZ))playerX+=vx;if(positionValid(playerX,playerZ+vz))playerZ+=vz;updateView();avatar.position.set(playerX,0,playerZ);avatar.rotation.y=yaw;const look=camera.getWorldDirection(new THREE.Vector3());
+const distanceToPillar=playerZ-frontZ;
+const close=distanceToPillar>0&&Math.hypot(playerX,distanceToPillar)<1.4;
+const rayLength=(frontZ-camera.position.z)/look.z;
+const apertureX=camera.position.x+look.x*rayLength;
+const apertureY=camera.position.y+look.y*rayLength-holeY;
+peek=raised&&distanceToPillar>0&&distanceToPillar<.52&&Math.abs(playerX)<.36
+  &&look.z<0&&Math.hypot(apertureX,apertureY)<holeRadius;
+upperBody.rotation.x=THREE.MathUtils.damp(upperBody.rotation.x,peek?-.24:0,14,dt);
+upperBody.position.y=THREE.MathUtils.damp(upperBody.position.y,raised?1.14:.91,14,dt);
+$('peekLabel').style.display=peek?'block':'none';
+if(peek){displayNotice('Live overhead feed · R: Look Closer');}else if(close&&!raised){displayNotice('Hold Space to raise your view and aim at the peephole.')}else if(close&&raised){displayNotice('Move one step closer and center the peephole in the crosshair.')}else $('notice').classList.remove('show');$('pos').textContent=`X ${playerX.toFixed(1)} · Z ${playerZ.toFixed(1)}`;}else if(!started){updateView();}
+// Every frame: fixed ceiling surveillance camera rotates around its fixed axis to follow the player.
+const dx=playerX-surveillanceCamera.position.x;
+const dz=playerZ-surveillanceCamera.position.z;
+const panYaw=clamp(Math.atan2(-dx,-dz),-1.12,1.12);
+head.rotation.set(-.59,panYaw,0,'YXZ');
+surveillanceCamera.quaternion.copy(head.quaternion);
+if(started&&updateSculptureGaze()&&now-lastSculptureShadowFrame>=150){
+  renderer.shadowMap.needsUpdate=true;
+  lastSculptureShadowFrame=now;
+}
+
+
+// Render the fixed surveillance view into the projection inside the hole.
+// Hide the projection surface itself during this pass to avoid feedback.
+
+if(!peek)lastOverheadFrame=-Infinity;
+if(peek&&now-lastOverheadFrame>=1000/30){
+  lastOverheadFrame=now;
+  peekScreen.visible=false;
+  renderer.setRenderTarget(renderTarget);
+  renderer.render(scene,surveillanceCamera);
+  renderer.setRenderTarget(null);
+}
+peekScreen.visible=peek;
+renderer.render(scene,camera)}
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();resizeRenderer();renderer.shadowMap.needsUpdate=true;});updateView();requestAnimationFrame(animate);
+</script>
+</body></html>
